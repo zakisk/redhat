@@ -54,7 +54,39 @@ func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) StoreFile(rw http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(200 << 20) // limit 200MB
+	if err != nil {
+		http.Error(rw, "Failed to parse multipart form", http.StatusBadRequest)
+		return
+	}
 
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		http.Error(rw,
+			fmt.Sprintf("Failed to get file from form data\nerror: %s", err.Error()),
+			http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	newFile, err := os.Create("./assets/" + header.Filename)
+	if err != nil {
+		http.Error(rw,
+			fmt.Sprintf("Failed to create new file\nerror: %s", err.Error()),
+			http.StatusInternalServerError)
+		return
+	}
+	defer newFile.Close()
+
+	_, err = io.Copy(newFile, file)
+	if err != nil {
+		http.Error(rw,
+			fmt.Sprintf("Failed to copy file data\nerror: %s", err.Error()),
+			http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(rw, fmt.Sprintf("File `%s` uploaded successfully", header.Filename))
 }
 
 func (h *Handler) RemoveFile(rw http.ResponseWriter, r *http.Request) {
