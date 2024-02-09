@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,6 +27,7 @@ func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	hasher, _ := blake2b.New256(nil)
+
 	for _, e := range entries {
 		info, _ := e.Info()
 		f, err := os.Open("./assets/" + info.Name())
@@ -43,14 +45,16 @@ func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
 		}
 
 		hash := hasher.Sum(nil)
-		fileChecksum := hex.EncodeToString(hash[:])
+		fileChecksum := hex.EncodeToString(hash)
 		if fileChecksum == checksum {
-			http.Error(rw,
-				fmt.Sprintf("File already exists!\nerror: %s", err.Error()),
-				http.StatusConflict) // duplicate record
+			rw.WriteHeader(http.StatusOK)
+			json.NewEncoder(rw).Encode(true)
 			return
 		}
 	}
+
+	rw.WriteHeader(http.StatusOK)
+	json.NewEncoder(rw).Encode(false)
 }
 
 func (h *Handler) StoreFile(rw http.ResponseWriter, r *http.Request) {
