@@ -19,10 +19,7 @@ func main() {
 	log := zerolog.New(output).With().Timestamp().Logger()
 
 	handler := handlers.NewHandlerInstance(log)
-	r, err := router.NewRouter(handler)
-	if err != nil {
-		log.Error().Str("error", err.Error()).Msg("Unable to create handler instance")
-	}
+	r := router.NewRouter(handler)
 	ch := gohandlers.CORS(
 		gohandlers.AllowedOrigins([]string{"*"}),
 		gohandlers.AllowedHeaders([]string{"*"}),

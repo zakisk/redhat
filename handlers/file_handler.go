@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,14 +13,17 @@ import (
 )
 
 func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
-	checksum := r.FormValue("checksum")
+	checksum := r.URL.Query().Get("checksum")
 	if len(checksum) == 0 {
-		http.Error(rw, "checksum of file doesn't exist, ensure sending it in request", http.StatusBadRequest)
+		msg := "checksum of file doesn't exist in query, ensure sending it"
+		h.log.Error().Msg(msg)
+		http.Error(rw, msg, http.StatusBadRequest)
 		return
 	}
 
 	entries, err := os.ReadDir("./assets")
 	if err != nil {
+		h.log.Error().Msg(err.Error())
 		http.Error(rw,
 			fmt.Sprintf("Failed to read directory\nerror: %s", err.Error()),
 			http.StatusInternalServerError)
@@ -32,12 +36,14 @@ func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
 		info, _ := e.Info()
 		f, err := os.Open("./assets/" + info.Name())
 		if err != nil {
+			h.log.Error().Msg(err.Error())
 			http.Error(rw,
 				fmt.Sprintf("Failed to open file\nerror: %s", err.Error()),
 				http.StatusInternalServerError)
 			return
 		}
 		if _, err = io.Copy(hasher, f); err != nil {
+			h.log.Error().Msg(err.Error())
 			http.Error(rw,
 				fmt.Sprintf("Failed to copy file content\nerror: %s", err.Error()),
 				http.StatusInternalServerError)
@@ -60,12 +66,14 @@ func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
 func (h *Handler) StoreFile(rw http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(200 << 20) // limit 200MB
 	if err != nil {
+		h.log.Error().Msg(err.Error())
 		http.Error(rw, "Failed to parse multipart form", http.StatusBadRequest)
 		return
 	}
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
+		h.log.Error().Msg(err.Error())
 		http.Error(rw,
 			fmt.Sprintf("Failed to get file from form data\nerror: %s", err.Error()),
 			http.StatusBadRequest)
@@ -75,6 +83,7 @@ func (h *Handler) StoreFile(rw http.ResponseWriter, r *http.Request) {
 
 	newFile, err := os.Create("./assets/" + header.Filename)
 	if err != nil {
+		h.log.Error().Msg(err.Error())
 		http.Error(rw,
 			fmt.Sprintf("Failed to create new file\nerror: %s", err.Error()),
 			http.StatusInternalServerError)
@@ -84,6 +93,7 @@ func (h *Handler) StoreFile(rw http.ResponseWriter, r *http.Request) {
 
 	_, err = io.Copy(newFile, file)
 	if err != nil {
+		h.log.Error().Msg(err.Error())
 		http.Error(rw,
 			fmt.Sprintf("Failed to copy file data\nerror: %s", err.Error()),
 			http.StatusInternalServerError)
@@ -94,11 +104,40 @@ func (h *Handler) StoreFile(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) RemoveFile(rw http.ResponseWriter, r *http.Request) {
+	fileName := r.URL.Query().Get("file_name")
+	if len(fileName) == 0 {
+		msg := "File name doesn't exist in query, ensure sending it"
+		h.log.Error().Msg(msg)
+		http.Error(rw, msg, http.StatusBadRequest)
+		return
+	}
 
+	_, err := os.Stat("./assets/" + fileName)
+	if err != nil {
+		h.log.Error().Msg(err.Error())
+		if errors.Is(err, os.ErrNotExist) {
+			http.Error(rw, fmt.Sprintf("No such file `%s`", fileName), http.StatusNotFound)
+			return
+		} else {
+			http.Error(rw, fmt.Sprintf("Failed to delete file\nerror: `%s`", err.Error()), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	err = os.Remove("./assets/" + fileName)
+	if err != nil {
+		h.log.Error().Msg(err.Error())
+		http.Error(rw,
+			fmt.Sprintf("Failed to delete file\nerror: %s", err.Error()),
+			http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(rw, fmt.Sprintf("File `%s` is removed successfully", fileName))
 }
 
 func (h *Handler) UpdateFile(rw http.ResponseWriter, r *http.Request) {
-
+		
 }
 
 func (h *Handler) ListFiles(rw http.ResponseWriter, r *http.Request) {
