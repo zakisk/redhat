@@ -31,7 +31,7 @@ func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
 		f, err := os.Open("./assets/" + info.Name())
 		if err != nil {
 			http.Error(rw,
-				fmt.Sprintf("Failed to create new file\nerror: %s", err.Error()),
+				fmt.Sprintf("Failed to open file\nerror: %s", err.Error()),
 				http.StatusInternalServerError)
 			return
 		}
@@ -46,7 +46,7 @@ func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
 		fileChecksum := hex.EncodeToString(hash[:])
 		if fileChecksum == checksum {
 			http.Error(rw,
-				fmt.Sprintf("Failed to copy file content\nerror: %s", err.Error()),
+				fmt.Sprintf("File already exists!\nerror: %s", err.Error()),
 				http.StatusConflict) // duplicate record
 			return
 		}
