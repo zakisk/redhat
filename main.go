@@ -10,15 +10,20 @@ import (
 
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/rs/zerolog"
+	fileops "github.com/zakisk/redhat/server/file_ops"
 	"github.com/zakisk/redhat/server/handlers"
 	"github.com/zakisk/redhat/server/router"
+	"golang.org/x/crypto/blake2b"
 )
 
 func main() {
 	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
 	log := zerolog.New(output).With().Timestamp().Logger()
 
-	handler := handlers.NewHandlerInstance(log)
+	hasher, _ := blake2b.New256(nil)
+	fileOps := fileops.NewFileOps(hasher)
+
+	handler := handlers.NewHandlerInstance(log, fileOps)
 	r := router.NewRouter(handler)
 	ch := gohandlers.CORS(
 		gohandlers.AllowedOrigins([]string{"*"}),

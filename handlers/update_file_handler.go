@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"io"
 	"net/http"
-	"os"
 
 	"github.com/zakisk/redhat/server/helpers"
 	"github.com/zakisk/redhat/server/models"
@@ -36,25 +34,12 @@ func (h *Handler) UpdateFile(rw http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	currentFile, err := os.OpenFile(header.Filename, os.O_WRONLY|os.O_CREATE, 0644)
+	err = h.fileOps.UpdateFile(header.Filename, file)
 	if err != nil {
 		h.log.Error().Msg(err.Error())
 		res := &models.Response{
 			Success: false,
-			Message: fmt.Sprintf("Failed to open destination file\nerror: %s", err.Error()),
-		}
-		rw.WriteHeader(http.StatusInternalServerError)
-		helpers.ToJSON(res, rw)
-		return
-	}
-	defer currentFile.Close()
-
-	_, err = io.Copy(currentFile, file)
-	if err != nil {
-		h.log.Error().Msg(err.Error())
-		res := &models.Response{
-			Success: false,
-			Message: fmt.Sprintf("Failed to copy data into file\nerror: %s", err.Error()),
+			Message: err.Error(),
 		}
 		rw.WriteHeader(http.StatusInternalServerError)
 		helpers.ToJSON(res, rw)

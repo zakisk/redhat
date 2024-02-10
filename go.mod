@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/docker/go-units v0.5.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
 	github.com/mattn/go-isatty v0.0.19 // indirect
