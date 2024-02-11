@@ -26,7 +26,7 @@ func (h *Handler) GetMostFrequentWords(rw http.ResponseWriter, r *http.Request) 
 		helpers.ToJSON(res, rw)
 		return
 	}
-
+	fmt.Printf("order: %s\n", order)
 	if order != "asc" && order != "dsc" {
 		res := &models.FrequentWordsResponse{
 			Success: false,
@@ -60,7 +60,7 @@ func (h *Handler) GetMostFrequentWords(rw http.ResponseWriter, r *http.Request) 
 		delete(wordCount.WordsCountMap, maxK)
 	}
 
-	frequentWords = sortMap(frequentWords, order)
+	sortedFrequentWords := sortMap(frequentWords, order)
 
 	msg := ""
 	if wordCount.TotalFileCount == 0 {
@@ -70,7 +70,7 @@ func (h *Handler) GetMostFrequentWords(rw http.ResponseWriter, r *http.Request) 
 	res := &models.FrequentWordsResponse{
 		Success: true,
 		Message: msg,
-		Words:   frequentWords,
+		Words:   sortedFrequentWords,
 	}
 	rw.WriteHeader(http.StatusOK)
 	helpers.ToJSON(res, rw)
@@ -78,12 +78,12 @@ func (h *Handler) GetMostFrequentWords(rw http.ResponseWriter, r *http.Request) 
 
 func sortMap(wordMap map[string]int, order string) map[string]int {
 	newMap := map[string]int{}
-
 	keys := make([]string, 0, len(wordMap))
 
 	for k := range wordMap {
 		keys = append(keys, k)
 	}
+
 	if order == "asc" {
 		sort.Strings(keys)
 	} else {
