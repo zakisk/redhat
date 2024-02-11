@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 
 	"github.com/zakisk/redhat/server/helpers"
@@ -10,11 +12,25 @@ import (
 
 func (h *Handler) GetMostFrequentWords(rw http.ResponseWriter, r *http.Request) {
 	w := r.URL.Query().Get("words")
+	order := r.URL.Query().Get("order")
+	if len(order) == 0 {
+		order = "asc" //default
+	}
 	words, _ := strconv.Atoi(w)
 	if words <= 0 {
 		res := &models.FrequentWordsResponse{
 			Success: false,
 			Message: "words count should be greater than zero",
+		}
+		rw.WriteHeader(http.StatusBadRequest)
+		helpers.ToJSON(res, rw)
+		return
+	}
+
+	if order != "asc" && order != "dsc" {
+		res := &models.FrequentWordsResponse{
+			Success: false,
+			Message: fmt.Sprintf("order `%s` is invalid", order),
 		}
 		rw.WriteHeader(http.StatusBadRequest)
 		helpers.ToJSON(res, rw)
@@ -44,6 +60,8 @@ func (h *Handler) GetMostFrequentWords(rw http.ResponseWriter, r *http.Request) 
 		delete(wordCount.WordsCountMap, maxK)
 	}
 
+	frequentWords = sortMap(frequentWords, order)
+
 	msg := ""
 	if wordCount.TotalFileCount == 0 {
 		msg = "There is no file on server"
@@ -56,4 +74,25 @@ func (h *Handler) GetMostFrequentWords(rw http.ResponseWriter, r *http.Request) 
 	}
 	rw.WriteHeader(http.StatusOK)
 	helpers.ToJSON(res, rw)
+}
+
+func sortMap(wordMap map[string]int, order string) map[string]int {
+	newMap := map[string]int{}
+
+	keys := make([]string, 0, len(wordMap))
+
+	for k := range wordMap {
+		keys = append(keys, k)
+	}
+	if order == "asc" {
+		sort.Strings(keys)
+	} else {
+		sort.Sort(sort.Reverse(sort.StringSlice(keys)))
+	}
+
+	for _, key := range keys {
+		newMap[key] = wordMap[key]
+	}
+
+	return newMap
 }
