@@ -1,6 +1,7 @@
 package fileops
 
 import (
+	"bufio"
 	"encoding/hex"
 	"fmt"
 	"hash"
@@ -8,6 +9,8 @@ import (
 	"io/fs"
 	"mime/multipart"
 	"os"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/docker/go-units"
@@ -22,8 +25,8 @@ func NewFileOps(hasher hash.Hash) *FileOps {
 	return &FileOps{Hasher: hasher}
 }
 
-func (fo *FileOps) FileChecksum(info fs.FileInfo) (string, error) {
-	f, err := os.Open("./assets/" + info.Name())
+func (fo *FileOps) FileChecksum(fileName string) (string, error) {
+	f, err := os.Open("./assets/" + fileName)
 	if err != nil {
 		return "", fmt.Errorf("Failed to open file\nerror: %s", err.Error())
 	}
@@ -101,4 +104,68 @@ func (fo *FileOps) ListFile(dir string) ([]*models.File, error) {
 	}
 
 	return files, nil
+}
+
+func (fo *FileOps) countWords(fileName string) (*models.WordCount, error) {
+	f, err := os.Open("./assets/" + fileName)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to open file\nerror: %s", err.Error())
+	}
+	defer f.Close()
+
+	wc := &models.WordCount{
+		WordsCountMap: map[string]int{},
+	}
+	var wg sync.WaitGroup
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		text := scanner.Text()
+		wg.Add(1)
+		go func() {
+			words := strings.Split(text, " ")
+			for _, word := range words {
+				wc.Mu.Lock()
+				word = strings.Trim(word, " :;.,-*")
+				word = strings.ToLower(word)
+				wc.WordsCountMap[word]++
+				wc.TotalWordsCount++
+				wc.Mu.Unlock()
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+
+	return wc, nil
+}
+
+func (fo *FileOps) CountAllWords() (*models.WordCount, error) {
+	entries, err := os.ReadDir("./assets")
+	if err != nil {
+		return nil, fmt.Errorf("Failed to open file\nerror: %s", err.Error())
+	}
+
+	var wg sync.WaitGroup
+	wc := &models.WordCount{
+		WordsCountMap: map[string]int{},
+	}
+	// var totalWordsCount :=
+	for _, e := range entries {
+		wg.Add(1)
+		go func(de fs.DirEntry) {
+			wordCount, _ := fo.countWords(de.Name())
+			wc.TotalFileCount++
+			wc.TotalWordsCount += wordCount.TotalWordsCount
+			for k, v := range wordCount.WordsCountMap {
+				wc.Mu.Lock()
+				wc.WordsCountMap[k] += v
+				wc.Mu.Unlock()
+			}
+			wg.Done()
+		}(e)
+	}
+
+	wg.Wait()
+	return wc, nil
 }

@@ -20,6 +20,8 @@ func NewRouter(handler models.HandlerInterface) *Router {
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/file_exists", handler.CheckSumFile).Queries("checksum", "{[0-9a-fA-F]+}")
 	getRouter.HandleFunc("/list_files", handler.ListFiles)
+	getRouter.HandleFunc("/count_all_words", handler.CountAllWords)
+	getRouter.HandleFunc("/get_most_frequent_words", handler.GetMostFrequentWords)
 
 	postRouter := sm.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/upload_file", handler.StoreFile)

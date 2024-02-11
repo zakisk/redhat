@@ -37,7 +37,7 @@ func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
 
 	for _, e := range entries {
 		info, _ := e.Info()
-		fileChecksum, err := h.fileOps.FileChecksum(info)
+		fileChecksum, err := h.fileOps.FileChecksum(info.Name())
 		if err != nil {
 			h.log.Error().Msg(err.Error())
 			res := &models.Response{
@@ -51,8 +51,11 @@ func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {
 
 		if fileChecksum == checksum {
 			res := &models.Response{
-				Success:  true,
-				Metadata: map[string]interface{}{"checksum_exists": true},
+				Success: true,
+				Metadata: map[string]interface{}{
+					"checksum_exists": true,
+					"file_name":       e.Name(),
+				},
 			}
 			rw.WriteHeader(http.StatusOK)
 			helpers.ToJSON(res, rw)
