@@ -127,8 +127,10 @@ func (fo *FileOps) countWords(fileName string) (*models.WordCount, error) {
 				wc.Mu.Lock()
 				word = strings.Trim(word, " :;.,-*")
 				word = strings.ToLower(word)
+				if wc.WordsCountMap[word] == 0 {
+					wc.TotalWordsCount++
+				}
 				wc.WordsCountMap[word]++
-				wc.TotalWordsCount++
 				wc.Mu.Unlock()
 			}
 			wg.Done()
