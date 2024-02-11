@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"io"
 	"net/http"
-	"os"
 
 	"github.com/zakisk/redhat/server/helpers"
 	"github.com/zakisk/redhat/server/models"
@@ -36,25 +34,12 @@ func (h *Handler) StoreFile(rw http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	newFile, err := os.Create("./assets/" + header.Filename)
+	err = h.fileOps.CreateFile(header.Filename, file)
 	if err != nil {
 		h.log.Error().Msg(err.Error())
 		res := &models.Response{
 			Success: false,
-			Message: fmt.Sprintf("Failed to create new file\nerror: %s", err.Error()),
-		}
-		rw.WriteHeader(http.StatusInternalServerError)
-		helpers.ToJSON(res, rw)
-		return
-	}
-	defer newFile.Close()
-
-	_, err = io.Copy(newFile, file)
-	if err != nil {
-		h.log.Error().Msg(err.Error())
-		res := &models.Response{
-			Success: false,
-			Message: fmt.Sprintf("Failed to copy file data\nerror: %s", err.Error()),
+			Message: err.Error(),
 		}
 		rw.WriteHeader(http.StatusInternalServerError)
 		helpers.ToJSON(res, rw)
