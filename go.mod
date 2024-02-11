@@ -1,4 +1,4 @@
-module github.com/zakisk/redhat/server
+module github.com/zakisk/redhat-server
 
 go 1.21.0
 

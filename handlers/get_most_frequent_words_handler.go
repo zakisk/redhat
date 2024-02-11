@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/zakisk/redhat/server/helpers"
-	"github.com/zakisk/redhat/server/models"
+	"github.com/zakisk/redhat-server/helpers"
+	"github.com/zakisk/redhat-server/models"
 )
 
 func (h *Handler) GetMostFrequentWords(rw http.ResponseWriter, r *http.Request) {

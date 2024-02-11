@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/docker/go-units"
-	"github.com/zakisk/redhat/server/models"
+	"github.com/zakisk/redhat-server/models"
 )
 
 type FileOps struct {

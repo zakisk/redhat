@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zakisk/redhat/server/helpers"
-	"github.com/zakisk/redhat/server/models"
+	"github.com/zakisk/redhat-server/helpers"
+	"github.com/zakisk/redhat-server/models"
 )
 
 func (h *Handler) StoreFile(rw http.ResponseWriter, r *http.Request) {

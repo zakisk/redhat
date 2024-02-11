@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/zakisk/redhat/server/helpers"
-	"github.com/zakisk/redhat/server/models"
+	"github.com/zakisk/redhat-server/helpers"
+	"github.com/zakisk/redhat-server/models"
 )
 
 func (h *Handler) CheckSumFile(rw http.ResponseWriter, r *http.Request) {

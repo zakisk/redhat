@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"github.com/rs/zerolog"
-	fileops "github.com/zakisk/redhat/server/file_ops"
-	"github.com/zakisk/redhat/server/models"
+	fileops "github.com/zakisk/redhat-server/file_ops"
+	"github.com/zakisk/redhat-server/models"
 )
 
 type Handler struct {

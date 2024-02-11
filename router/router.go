@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/zakisk/redhat/server/models"
+	"github.com/zakisk/redhat-server/models"
 )
 
 type Router struct {

@@ -10,9 +10,9 @@ import (
 
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/rs/zerolog"
-	fileops "github.com/zakisk/redhat/server/file_ops"
-	"github.com/zakisk/redhat/server/handlers"
-	"github.com/zakisk/redhat/server/router"
+	fileops "github.com/zakisk/redhat-server/file_ops"
+	"github.com/zakisk/redhat-server/handlers"
+	"github.com/zakisk/redhat-server/router"
 	"golang.org/x/crypto/blake2b"
 )
 
