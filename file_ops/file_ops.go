@@ -130,7 +130,9 @@ func (fo *FileOps) countWords(fileName string) (*models.WordCount, error) {
 				if wc.WordsCountMap[word] == 0 {
 					wc.TotalWordsCount++
 				}
-				wc.WordsCountMap[word]++
+				if !isIgnoreWord(word) {
+					wc.WordsCountMap[word]++
+				}
 				wc.Mu.Unlock()
 			}
 			wg.Done()
@@ -170,4 +172,105 @@ func (fo *FileOps) CountAllWords() (*models.WordCount, error) {
 
 	wg.Wait()
 	return wc, nil
+}
+
+func isIgnoreWord(word string) bool {
+	switch word {
+	case "":
+		return true
+	case "a":
+		return true
+	case "and":
+		return true
+	case "he":
+		return true
+	case "she":
+		return true
+	case "they":
+		return true
+	case "in":
+		return true
+	case "of":
+		return true
+	case "that":
+		return true
+	case "the":
+		return true
+	case "to":
+		return true
+	case "was":
+		return true
+	case "is":
+		return true
+	case "are":
+		return true
+	case "am":
+		return true
+	case "i":
+		return true
+	case "we":
+		return true
+	case "us":
+		return true
+	case "with":
+		return true
+	case "as":
+		return true
+	case "at":
+		return true
+	case "be":
+		return true
+	case "by":
+		return true
+	case "for":
+		return true
+	case "had":
+		return true
+	case "have":
+		return true
+	case "his":
+		return true
+	case "it":
+		return true
+	case "not":
+		return true
+	case "on":
+		return true
+	case "but":
+		return true
+	case "from":
+		return true
+	case "her":
+		return true
+	case "him":
+		return true
+	case "or":
+		return true
+	case "this":
+		return true
+	case "were":
+		return true
+	case "which":
+		return true
+	case "you":
+		return true
+	case "all":
+		return true
+	case "an":
+		return true
+	case "been":
+		return true
+	case "so":
+		return true
+	case "their":
+		return true
+	case "there":
+		return true
+	case "when":
+		return true
+	case "who":
+		return true
+	}
+
+	return false
 }

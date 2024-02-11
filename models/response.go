@@ -26,3 +26,9 @@ type WordCountResponse struct {
 	AllFilesProcessed int    `json:"allFilesProcessed"`
 	AllWordsCount     int64  `json:"allWordCount"`
 }
+
+type FrequentWordsResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Words   map[string]int
+}
