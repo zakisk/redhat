@@ -14,7 +14,7 @@ func (h *Handler) GetMostFrequentWords(rw http.ResponseWriter, r *http.Request) 
 	if words <= 0 {
 		res := &models.FrequentWordsResponse{
 			Success: false,
-			Message: "words should be greater than zero",
+			Message: "words count should be greater than zero",
 		}
 		rw.WriteHeader(http.StatusBadRequest)
 		helpers.ToJSON(res, rw)
